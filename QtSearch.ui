@@ -34,7 +34,26 @@
      <widget class="QLineEdit" name="lineEdit"/>
     </item>
     <item>
-     <widget class="QTextEdit" name="textEdit"/>
+     <widget class="QLabel" name="labelMatches">
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Total matches: 0</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTextEdit" name="textEdit">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

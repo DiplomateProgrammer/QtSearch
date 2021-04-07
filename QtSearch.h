@@ -1,39 +1,12 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
+#include "SearchThread.h"
 #include "stdafx.h"
 #include "ui_QtSearch.h"
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <vector>
 
-const std::string DICTIONARY_FILE_NAME = "words.txt";
-const size_t WORD_BATCH_SIZE = 100;
-const int num_workers = 4;
-
-
-class ProcessSearchThread : public QThread
-{
-    Q_OBJECT
-
-public:
-    void run();
-    void startSearching();
-    void stopSearching();
-    std::string readString();
-    void writeString(std::string newValue);
-    void handleFinished(int numThread);
-private:
-    std::string seachString = "";
-    std::ifstream file;
-    QFuture<void> futures[num_workers];
-    QFutureWatcher<void> watchers[num_workers];
-    std::vector<std::string> words[num_workers];
-signals:
-    void workDone();
-    void workStopped();
-};
+//How many matches will be shown
+const int maxMatchesShown = 500;
 
 class QtSearch : public QMainWindow
 {
@@ -41,10 +14,15 @@ class QtSearch : public QMainWindow
 
 public:
     QtSearch(QWidget *parent = Q_NULLPTR);
+    ~QtSearch();
 private slots:
     void handleTextChanged();
+    void handlePartialWorkDone(QString result, int numMatches, QString searchString);
+    void handleSearchFinished();
 private:
+    int totalMatches;
     Ui::MainWindow ui;
-    std::atomic<bool> working = false;
-    ProcessSearchThread* searcherThread = nullptr;
+    QThread searcherThread;
+signals:
+    void startComputation(QString searchString);
 };
