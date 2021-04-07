@@ -23,7 +23,7 @@ class Worker : public QObject
     Q_OBJECT
 
 public slots:
-    void filterWords(stringVector words);
+    void filterWords(stringVector words, const bool nonconsecutive);
 signals:
     void finishedWork(QString result, int numMatches);
 };
@@ -44,12 +44,13 @@ private:
     Worker* workers[numWorkers];
     QThread workerThreads[numWorkers];
     int currentlyWorking = 0;
+    bool nonconsecutive;
     QString searchString;
 public slots:
-    void startSearching(QString searchString);
+    void startSearching(QString searchString, bool nonconsecutive);
     void handleWorkerFinished(QString result, int numMatches, int numThread);
 signals:
-    void partialWorkDone(QString result, int numMatches, QString searchString); //0'th is the search string
+    void partialWorkDone(QString result, int numMatches, QString searchString, bool nonconsecutive);
     void searchFinished();
 };
 

@@ -17,12 +17,14 @@ public:
     ~QtSearch();
 private slots:
     void handleTextChanged();
-    void handlePartialWorkDone(QString result, int numMatches, QString searchString);
+    void handleCheckedChanged();
+    void handlePartialWorkDone(QString result, int numMatches, QString searchString, bool nonconsecutive);
     void handleSearchFinished();
 private:
+    void startSearch();
     int totalMatches;
     Ui::MainWindow ui;
     QThread searcherThread;
 signals:
-    void startComputation(QString searchString);
+    void startComputation(QString searchString, bool nonconsecutive);
 };

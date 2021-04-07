@@ -5,6 +5,7 @@ QtSearch::QtSearch(QWidget* parent)
 {
     ui.setupUi(this);
     connect(ui.lineEdit, &QLineEdit::textEdited, this, &QtSearch::handleTextChanged);
+    connect(ui.checkBox, &QCheckBox::stateChanged, this, &QtSearch::handleCheckedChanged);
 }
 QtSearch::~QtSearch()
 {
@@ -12,8 +13,10 @@ QtSearch::~QtSearch()
     searcherThread.wait();
 }
 
-void QtSearch::handleTextChanged()
+void QtSearch::startSearch()
 {
+    bool nonconsecutive = false;
+    if (ui.checkBox->checkState() == Qt::Checked) nonconsecutive = true;
     totalMatches = 0;
     ui.labelMatches->setText("Total matches: 0");
     QString newText = ui.lineEdit->text();
@@ -34,12 +37,25 @@ void QtSearch::handleTextChanged()
     }
     ui.label->setText("Processing request...");
     ui.labelMatches->setText("Total matches: 0");
-    emit(startComputation(newText));
+    emit(startComputation(newText, nonconsecutive));
 }
 
-void QtSearch::handlePartialWorkDone(QString result, int numMatches, QString searchString)
+void QtSearch::handleTextChanged()
+{
+    startSearch();
+}
+
+void QtSearch::handleCheckedChanged()
+{
+    startSearch();
+}
+
+void QtSearch::handlePartialWorkDone(QString result, int numMatches, QString searchString, bool nonconsecutive)
 {
     if (searchString != ui.lineEdit->text()) return;
+    bool curNonconsecutive = false;
+    if (ui.checkBox->checkState() == Qt::Checked) curNonconsecutive = true;
+    if (nonconsecutive != curNonconsecutive) return;
     int oldMatches = totalMatches;
     if (numMatches == 0) return;
     totalMatches += numMatches;

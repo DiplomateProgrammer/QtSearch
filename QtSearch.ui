@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>898</width>
+    <width>641</width>
     <height>690</height>
    </rect>
   </property>
@@ -32,6 +32,18 @@
     </item>
     <item>
      <widget class="QLineEdit" name="lineEdit"/>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="checkBox">
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Allow nonconsecutive matching</string>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QLabel" name="labelMatches">

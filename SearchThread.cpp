@@ -2,7 +2,7 @@
 #include <functional>
 
 //This function filters out the words that don't contain the substring, returns a QString to add to UI and number of matches.
-void Worker::filterWords(stringVector words) //0'th element is the substring.
+void Worker::filterWords(stringVector words, const bool nonconsecutive) //0'th element is the substring.
 {
 	int numMatches = 0;
 	QString res = "";
@@ -11,19 +11,31 @@ void Worker::filterWords(stringVector words) //0'th element is the substring.
 	for (int i = 1; i < words.size(); i++)
 	{
 		bool fits = false;
-		for (int start = 0; !fits && start < (int)words[i].length() - (int)searchString.length() + 1; start++)
+		if (nonconsecutive)
 		{
-			fits = true;
-			for (int cur = start; fits && cur < start + (int)searchString.length(); cur++)
+			int curFits = 0;
+			for (int cur = 0; curFits < searchString.length() && cur < words[i].length(); cur++)
 			{
-				if (words[i][cur] != searchString[cur - start]) fits = false;
+				if (words[i][cur] == searchString[curFits]) curFits++;
 			}
-			if (fits)
+			if (curFits == searchString.length()) fits = true;
+		}
+		else
+		{
+			for (int start = 0; !fits && start < (int)words[i].length() - (int)searchString.length() + 1; start++)
 			{
-				if (numMatches > 0) res += ", ";
-				res += QString::fromStdString(words[i]);
-				numMatches++;
+				fits = true;
+				for (int cur = start; fits && cur < start + (int)searchString.length(); cur++)
+				{
+					if (words[i][cur] != searchString[cur - start]) fits = false;
+				}
 			}
+		}
+		if (fits)
+		{
+			if (numMatches > 0) res += ", ";
+			res += QString::fromStdString(words[i]);
+			numMatches++;
 		}
 	}
 	emit(finishedWork(res, numMatches));
@@ -75,14 +87,14 @@ void Searcher::startOneWorkerThread(int numThread)
 	{
 		currentlyWorking++;
 		QMetaObject::invokeMethod(workers[numThread], "filterWords", Qt::QueuedConnection,
-			Q_ARG(stringVector, words[numThread]));
+			Q_ARG(stringVector, words[numThread]), Q_ARG(bool, nonconsecutive));
 	}
 }
 
 void Searcher::handleWorkerFinished(QString result, int numMatches, int numThread)
 {
 	currentlyWorking--;
-	emit(partialWorkDone(result, numMatches, searchString));
+	emit(partialWorkDone(result, numMatches, searchString, nonconsecutive));
 	if (file.eof())
 	{
 		if (currentlyWorking == 0)
@@ -101,11 +113,12 @@ void Searcher::handleWorkerFinished(QString result, int numMatches, int numThrea
 	startOneWorkerThread(numThread);
 }
 
-void Searcher::startSearching(QString searchString)
+void Searcher::startSearching(QString searchString, bool nonconsecutive)
 {
 	currentlyWorking = 0;
 	file.seekg(0);
 	this->searchString = searchString;
+	this->nonconsecutive = nonconsecutive;
 	for (int i = 0; i < numWorkers; i++)
 	{
 		workers[i] = new Worker();
