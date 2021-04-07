@@ -23,9 +23,9 @@ class Worker : public QObject
     Q_OBJECT
 
 public slots:
-    void filterWords(stringVector words, const bool nonconsecutive);
+    void filterWords(const stringVector& words, const bool nonconsecutive);
 signals:
-    void finishedWork(QString result, int numMatches);
+    void finishedWork(const QString& result, const int numMatches);
 };
 
 
@@ -38,7 +38,7 @@ public:
     Searcher();
     ~Searcher();
 private:
-    void startOneWorkerThread(int numThread);
+    void startOneWorkerThread(const int numThread);
     std::ifstream file;
     stringVector words[numWorkers];
     Worker* workers[numWorkers];
@@ -47,10 +47,10 @@ private:
     bool nonconsecutive;
     QString searchString;
 public slots:
-    void startSearching(QString searchString, bool nonconsecutive);
-    void handleWorkerFinished(QString result, int numMatches, int numThread);
+    void startSearching(const QString& searchString, const bool nonconsecutive);
+    void handleWorkerFinished(const QString& result, const int numMatches, const int numThread);
 signals:
-    void partialWorkDone(QString result, int numMatches, QString searchString, bool nonconsecutive);
+    void partialWorkDone(const QString& result, const int numMatches, const QString& searchString, const bool nonconsecutive);
     void searchFinished();
 };
 

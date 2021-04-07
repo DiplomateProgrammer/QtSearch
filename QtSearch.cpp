@@ -50,7 +50,7 @@ void QtSearch::handleCheckedChanged()
     startSearch();
 }
 
-void QtSearch::handlePartialWorkDone(QString result, int numMatches, QString searchString, bool nonconsecutive)
+void QtSearch::handlePartialWorkDone(const QString& result, const int numMatches, const QString& searchString, const bool nonconsecutive)
 {
     if (searchString != ui.lineEdit->text()) return;
     bool curNonconsecutive = false;

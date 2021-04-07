@@ -2,12 +2,11 @@
 #include <functional>
 
 //This function filters out the words that don't contain the substring, returns a QString to add to UI and number of matches.
-void Worker::filterWords(stringVector words, const bool nonconsecutive) //0'th element is the substring.
+void Worker::filterWords(const stringVector& words, const bool nonconsecutive) //0'th element is the substring.
 {
 	int numMatches = 0;
 	QString res = "";
-	std::string& searchString = words[0];
-	//Naive algorithm is implemented since words are small and mostly don't have ugly patterns
+	const std::string& searchString = words[0];
 	for (int i = 1; i < words.size(); i++)
 	{
 		bool fits = false;
@@ -20,7 +19,7 @@ void Worker::filterWords(stringVector words, const bool nonconsecutive) //0'th e
 			}
 			if (curFits == searchString.length()) fits = true;
 		}
-		else
+		else //Naive algorithm is implemented since words are small
 		{
 			for (int start = 0; !fits && start < (int)words[i].length() - (int)searchString.length() + 1; start++)
 			{
@@ -67,7 +66,7 @@ Searcher::~Searcher()
 	}
 }
 
-void Searcher::startOneWorkerThread(int numThread)
+void Searcher::startOneWorkerThread(const int numThread)
 {
 	if (file.eof())
 	{
@@ -91,7 +90,7 @@ void Searcher::startOneWorkerThread(int numThread)
 	}
 }
 
-void Searcher::handleWorkerFinished(QString result, int numMatches, int numThread)
+void Searcher::handleWorkerFinished(const QString& result, const int numMatches, const int numThread)
 {
 	currentlyWorking--;
 	emit(partialWorkDone(result, numMatches, searchString, nonconsecutive));
@@ -113,7 +112,7 @@ void Searcher::handleWorkerFinished(QString result, int numMatches, int numThrea
 	startOneWorkerThread(numThread);
 }
 
-void Searcher::startSearching(QString searchString, bool nonconsecutive)
+void Searcher::startSearching(const QString& searchString, const bool nonconsecutive)
 {
 	currentlyWorking = 0;
 	file.seekg(0);

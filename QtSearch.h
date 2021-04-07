@@ -18,7 +18,7 @@ public:
 private slots:
     void handleTextChanged();
     void handleCheckedChanged();
-    void handlePartialWorkDone(QString result, int numMatches, QString searchString, bool nonconsecutive);
+    void handlePartialWorkDone(const QString& result, const int numMatches, const QString& searchString, const bool nonconsecutive);
     void handleSearchFinished();
 private:
     void startSearch();
@@ -26,5 +26,5 @@ private:
     Ui::MainWindow ui;
     QThread searcherThread;
 signals:
-    void startComputation(QString searchString, bool nonconsecutive);
+    void startComputation(const QString& searchString, const bool nonconsecutive);
 };
