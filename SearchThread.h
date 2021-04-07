@@ -9,11 +9,12 @@
 
 using stringVector = std::vector<std::string>;
 Q_DECLARE_METATYPE(stringVector)
+Q_DECLARE_METATYPE(std::string)
 
 //Path to the dictionary file
 const std::string DICTIONARY_FILE_NAME = "words.txt";
 //How many words one worker thread handles at a time
-const size_t WORD_BATCH_SIZE = 500;
+const size_t WORD_BATCH_SIZE = 1000;
 //How many worker threads are processing word batches simultaneously
 const int numWorkers = 2;
 
@@ -25,7 +26,7 @@ class Worker : public QObject
 public slots:
     void filterWords(const stringVector& words, const bool nonconsecutive);
 signals:
-    void finishedWork(const QString& result, const int numMatches);
+    void finishedWork(const QString& result, const int numMatches, const std::string& searcString, const bool nonconsecutive);
 };
 
 
@@ -48,7 +49,8 @@ private:
     QString searchString;
 public slots:
     void startSearching(const QString& searchString, const bool nonconsecutive);
-    void handleWorkerFinished(const QString& result, const int numMatches, const int numThread);
+    void handleWorkerFinished(const QString& result, const int numMatches, const std::string& searcString, const bool nonconsecutive, const int numThread);
+    void handleStop();
 signals:
     void partialWorkDone(const QString& result, const int numMatches, const QString& searchString, const bool nonconsecutive);
     void searchFinished();

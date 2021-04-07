@@ -27,4 +27,5 @@ private:
     QThread searcherThread;
 signals:
     void startComputation(const QString& searchString, const bool nonconsecutive);
+    void stopComputation();
 };

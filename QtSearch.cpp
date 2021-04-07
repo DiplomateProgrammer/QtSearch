@@ -4,6 +4,14 @@ QtSearch::QtSearch(QWidget* parent)
     : QMainWindow(parent)
 {
     ui.setupUi(this);
+    Searcher* searcher = new Searcher();
+    searcher->moveToThread(&searcherThread);
+    connect(&searcherThread, &QThread::finished, searcher, &QObject::deleteLater);
+    connect(this, &QtSearch::startComputation, searcher, &Searcher::startSearching);
+    connect(this, &QtSearch::stopComputation, searcher, &Searcher::handleStop);
+    connect(searcher, &Searcher::partialWorkDone, this, &QtSearch::handlePartialWorkDone);
+    connect(searcher, &Searcher::searchFinished, this, &QtSearch::handleSearchFinished);
+    searcherThread.start();
     connect(ui.lineEdit, &QLineEdit::textEdited, this, &QtSearch::handleTextChanged);
     connect(ui.checkBox, &QCheckBox::stateChanged, this, &QtSearch::handleCheckedChanged);
 }
@@ -15,21 +23,13 @@ QtSearch::~QtSearch()
 
 void QtSearch::startSearch()
 {
+    emit(stopComputation());
     bool nonconsecutive = false;
     if (ui.checkBox->checkState() == Qt::Checked) nonconsecutive = true;
     totalMatches = 0;
     ui.labelMatches->setText("Total matches: 0");
     QString newText = ui.lineEdit->text();
     ui.textEdit->clear();
-    searcherThread.quit();
-    searcherThread.wait();
-    Searcher* searcher = new Searcher();
-    searcher->moveToThread(&searcherThread);
-    connect(&searcherThread, &QThread::finished, searcher, &QObject::deleteLater);
-    connect(this, &QtSearch::startComputation, searcher, &Searcher::startSearching);
-    connect(searcher, &Searcher::partialWorkDone, this, &QtSearch::handlePartialWorkDone);
-    connect(searcher, &Searcher::searchFinished, this, &QtSearch::handleSearchFinished);
-    searcherThread.start();
     if (newText == "")
     {
         ui.label->setText("Idle");

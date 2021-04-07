@@ -37,12 +37,13 @@ void Worker::filterWords(const stringVector& words, const bool nonconsecutive) /
 			numMatches++;
 		}
 	}
-	emit(finishedWork(res, numMatches));
+	emit(finishedWork(res, numMatches, searchString, nonconsecutive));
 }
 
 Searcher::Searcher()
 {
 	qRegisterMetaType<stringVector>("stringVector");
+	qRegisterMetaType<std::string>("std::string");
 	try
 	{
 		file.open(DICTIONARY_FILE_NAME);
@@ -90,8 +91,9 @@ void Searcher::startOneWorkerThread(const int numThread)
 	}
 }
 
-void Searcher::handleWorkerFinished(const QString& result, const int numMatches, const int numThread)
+void Searcher::handleWorkerFinished(const QString& result, const int numMatches, const std::string& searcString, const bool nonconsecutive, const int numThread)
 {
+	if (this->searchString.toStdString() != searcString || this->nonconsecutive != nonconsecutive) return;
 	currentlyWorking--;
 	emit(partialWorkDone(result, numMatches, searchString, nonconsecutive));
 	if (file.eof())
@@ -112,9 +114,25 @@ void Searcher::handleWorkerFinished(const QString& result, const int numMatches,
 	startOneWorkerThread(numThread);
 }
 
+void Searcher::handleStop()
+{
+	for (int i = 0; i < numWorkers; i++)
+	{
+		workerThreads[i].quit();
+	}
+	for (int i = 0; i < numWorkers; i++)
+	{
+		workerThreads[i].wait();
+	}
+	currentlyWorking = 0;
+	searchString = "";
+	nonconsecutive = !nonconsecutive;
+}
+
 void Searcher::startSearching(const QString& searchString, const bool nonconsecutive)
 {
 	currentlyWorking = 0;
+	file.clear();
 	file.seekg(0);
 	this->searchString = searchString;
 	this->nonconsecutive = nonconsecutive;
@@ -123,9 +141,9 @@ void Searcher::startSearching(const QString& searchString, const bool nonconsecu
 		workers[i] = new Worker();
 		workers[i]->moveToThread(&workerThreads[i]);
 		connect(&workerThreads[i], &QThread::finished, workers[i], &QObject::deleteLater);
-		auto handler = [=](QString result, int numMatches)
+		auto handler = [=](const QString& result, const int numMatches, const std::string& searchString, const bool nonconsecutive)
 		{
-			handleWorkerFinished(result, numMatches, i);
+			handleWorkerFinished(result, numMatches, searchString, nonconsecutive, i);
 		};
 		connect(workers[i], &Worker::finishedWork, this, handler);
 		workerThreads[i].start();
