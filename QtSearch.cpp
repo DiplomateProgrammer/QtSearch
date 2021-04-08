@@ -61,14 +61,16 @@ void QtSearch::handlePartialWorkDone(const QString& result, const int numMatches
     totalMatches += numMatches;
     ui.labelMatches->setText("Total matches: " + QString::number(totalMatches));
     if (oldMatches > maxMatchesShown) return;
-    if (oldMatches <= maxMatchesShown && totalMatches > maxMatchesShown)
-    {
-        ui.textEdit->setPlainText(ui.textEdit->toPlainText() + ", " + result + " and more...");
-        return;
-    }
     QString addition = "", current = ui.textEdit->toPlainText();
     if (current.length() > 0) addition = ", ";
-    ui.textEdit->setPlainText(current + addition + result);
+    if (oldMatches <= maxMatchesShown && totalMatches > maxMatchesShown)
+    {
+        ui.textEdit->setPlainText(current + addition + result + " and more...");
+    }
+    else
+    {
+        ui.textEdit->setPlainText(current + addition + result);
+    }
 }
 
 void QtSearch::handleSearchFinished()
